@@ -10,7 +10,7 @@
 // +----------------------------------------------------------------------
 
 // 应用入口文件
-echo "hello world";
+//echo "hello world";
 // 检测PHP环境
 if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
 
@@ -18,7 +18,9 @@ if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
 define('APP_DEBUG',True);
 
 //
-define('BIND_MODULE','Views');
+//define('BIND_MODULE','Views');
+
+//如果你的环境足够安全，不希望生成目录安全文件，可以在入口文件里面关闭目录安全文件的生成，例如：
 define('BUILD_DIR_SECURE',false);
 
 
@@ -26,8 +28,12 @@ define('BUILD_DIR_SECURE',false);
 // 定义应用目录
 define('APP_PATH','./Application/');
 
-//todo 绑定入口文件到Admin模块访问
-//define('BIND_MODULE', 'admin');
+//todo 绑定入口文件到Index模块访问
+//define('BIND_MODULE', 'Admin');
+
+//todo 绑定访问Index控制器
+//define('BIND_CONTROLLER','Index');
+
 
 //todo 定义运行时目录
 //define('RUNTIME', '.Runtime/');

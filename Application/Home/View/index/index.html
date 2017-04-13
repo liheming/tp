@@ -1,1 +1,86 @@
-bs3-template:html5
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <title>添加eat order</title>
+
+
+</head>
+
+<body>
+<!--导航栏-->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Demo Debug Server -1.0</a>
+        </div>
+
+    </div>
+</nav>
+
+
+
+<!--列表组-->
+<div class="list-group">
+    <a href="api_home" class="list-group-item active">
+        <h4 class="list-group-item-heading">
+           DeBug Console
+        </h4>
+    </a>
+    <a href="login_test" class="list-group-item">
+        <h4 class="list-group-item-heading">
+            Api Document
+        </h4>
+    </a>
+
+
+    </a>
+</div>
+
+
+
+<form action="publish_eat_order" method="get">
+    <div class="input-group">
+        <span class="input-group-addon" id="basic-addon1">菜名</span>
+        <input type="text" name="order_title" class="form-control" placeholder="菜名" aria-describedby="basic-addon1">
+    </div>
+
+    <div class="input-group">
+        <span class="input-group-addon" id="jiage">价格（元）</span>
+        <input type="number" step="1" min="5" max="1000" class="form-control" placeholder="价格（元）" aria-describedby="basic-addon1">
+    </div>
+
+    <div class="input-group">
+        <span class="input-group-addon" id="">图片名</span>
+        <input type="text" class="form-control" placeholder="图片名" aria-describedby="basic-addon1">
+    </div>
+
+    <div class="input-group">
+        <span class="input-group-addon">菜品描述</span>
+        <input type="text" class="form-control" placeholder="菜品描述" aria-describedby="basic-addon1">
+    </div>
+
+    <div class="form-group">
+        <label class="radio-inline">
+            <input type="radio" value="option1" name="sex">自提
+        </label>
+        <label class="radio-inline">
+            <input type="radio" value="option2" name="sex">送上门
+        </label>
+        <label class="radio-inline">
+            <input type="radio" value="option3" name="sex">上门提
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg btn-block">发布</button>
+
+</form>
+
+
+</body>
+</html>

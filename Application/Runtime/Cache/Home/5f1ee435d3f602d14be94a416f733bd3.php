@@ -4,5 +4,6 @@
 </head>
 <body>
 hello, <?php echo ($name); ?>! hello world
+<?php echo "我是黎合明" ?>
 </body>
 </html>
