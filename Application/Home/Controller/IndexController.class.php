@@ -20,6 +20,7 @@ namespace Home\Controller;
  */
 
 use Org\Util\Date;
+use Org\Util\String;
 use Think\Controller;
 
 
@@ -32,7 +33,7 @@ class IndexController extends Controller
 
     public static function tokenExpire()
     {
-        $arr = array('status' => -1, 'msg' => 'token过期', 'result' => null);
+        $arr = array('status' => -1, 'msg' => 'token过期',);
         return json_encode($arr);
     }
 
@@ -77,7 +78,55 @@ class IndexController extends Controller
 
 
 //TODO  1、用户管理
-    /**  接口说明 ：用户登录
+
+    /**  接口说明 ：5.1用户注册
+     * @action /register
+     * @method  get
+     * @url_test http://localhost/tp/home/index/register/
+     * @param $user_phone String
+     * @param $user_pass String
+     * @return  array(status,msg)
+     */
+    public function register($user_phone = null, $user_pass = null)
+    {
+        $User = M("User");
+        $User->user_phone = $user_phone;
+        $User->user_pass = $user_pass;
+        $status = $User->add();
+        if ($status) {
+            $arr = array('status' => 1, 'msg' => '注册成功');
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => '注册失败');
+            echo json_encode($arr);
+        }
+    }
+
+    /**  接口说明 ：5.2 重置密码
+     * @action /resetPass
+     * @method  get
+     * @url_test http://localhost/tp/home/index/resetPass/
+     * @param $user_phone String
+     * @param $user_pass String
+     * @return  array(status,msg)
+     */
+    public function resetPass($user_phone = null, $user_pass = null)
+    {
+
+        $User = M("User");
+        $User->user_pass = $user_pass;
+        $status = $User->where('user_phone= %s', $user_phone)->save();
+        if ($status) {
+            $arr = array('status' => 1, 'msg' => '重置密码成功');
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => '重置密码失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：5.3用户登陆
      * @action /login
      * @method  get
      * @url_test http://localhost/tp/home/index/login/user_phone/18942433927/user_pass/94682431/
@@ -107,75 +156,11 @@ class IndexController extends Controller
             $arr = array('status' => 0, 'msg' => '登陆失败 failed', 'token' => $token);
 //                echo json_encode($arr);
         }
-//        if (true) {
-//
-//            //手机号码和IMEI生成base64随机数作token返回给客户端
-//            $token = base64_encode( $user_phone);
-//            $User->user_token = $token;
-//            $status = $User->where("user_phone='%s'", $user_phone)->save();
-//            if (true) {
-//                $arr = array('status' => $status, 'msg' => '登陆成功 success', 'token' => $token);
-//                echo json_encode($arr);
-//            } else {
-//                $arr = array('status' => 0, 'msg' => '登陆失败 failed', 'token' => $token);
-//                echo json_encode($arr);
-//            }
-//
-//        } else {
-//            $arr = array('status' => -1 , 'msg' => '用户名或密码不正确 failed', 'token' => $token);
-//            echo json_encode($arr);
-////            dump(json_encode($arr))   ;
-//        }
-    }
 
-    /**  接口说明 ：用户注册账号
-     * @action /register
-     * @method  get
-     * @url_test http://localhost/tp/home/index/register/
-     * @param $user_phone String
-     * @param $user_pass String
-     * @return  array(status,msg)
-     */
-    public function register($user_phone = null, $user_pass = null)
-    {
-        $User = M("User");
-        $User->user_phone = $user_phone;
-        $User->user_pass = $user_pass;
-        $status = $User->add();
-        if ($status) {
-            $arr = array('status' => 1, 'msg' => '注册成功');
-            echo json_encode($arr);
-        } else {
-            $arr = array('status' => 0, 'msg' => '注册失败');
-            echo json_encode($arr);
-        }
-    }
-
-    /**  接口说明 ：用户重置密码
-     * @action /resetPass
-     * @method  get
-     * @url_test http://localhost/tp/home/index/resetPass/
-     * @param $user_phone String
-     * @param $user_pass String
-     * @return  array(status,msg)
-     */
-    public function resetPass($user_phone = null, $user_pass = null)
-    {
-
-        $User = M("User");
-        $User->user_pass = $user_pass;
-        $status = $User->where('user_phone= %s', $user_phone)->save();
-        if ($status) {
-            $arr = array('status' => 1, 'msg' => '重置密码成功');
-            echo json_encode($arr);
-        } else {
-            $arr = array('status' => 0, 'msg' => '重置密码失败');
-            echo json_encode($arr);
-        }
     }
 
 
-    /**  接口说明 ：用户注销登录
+    /**  接口说明 ：5.4注销登录
      * @action /logout
      * @method  get
      * @url_test http://localhost/tp/home/index/logout/user_token/MTg5NDI0MzM5Mjc=
@@ -198,8 +183,39 @@ class IndexController extends Controller
     }
 
 
+    /**  接口说明 ：5.5 用户修改资料(学历 性别 年龄等 一次修改一次)
+     * @action /update_userInfo
+     * @method  get
+     * @@url_test http://localhost/tp/index.php/home/index/update_userInfo/user_token/MTg5NDI0MzM5Mjc=/user_info//user_data/
+     * @param  String $user_token
+     * @param  String $user_info
+     * @param  String $user_data
+     * @return array(status,msg)
+     */
 
-    /**  接口说明 ：用户修改头像
+    public function update_userInfo($user_token = null, $user_info = null, $user_data = null)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+            $User = M("User");
+            $User->$user_info = $user_data;
+
+            $status = $User->where("user_token='%s'", $user_token)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => '修改信息成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => '修改信息失败');
+                echo json_encode($arr);
+            }
+        } else {
+            $arr = array('status' => -1, 'msg' => 'token过期');
+            echo json_encode($arr);
+        }
+
+    }
+
+
+    /**  接口说明 ：5.6修改头像 （上传图片）
      * @action /update_icon
      * @method  get
      * http://localhost/tp/home/index/update_icon/user_token/MTg5NDI0MzM5Mjc=
@@ -230,7 +246,7 @@ class IndexController extends Controller
 
     }
 
-    /**  接口说明 ：用户修改密码
+    /**  接口说明 ：5.7用户修改密码
      * @action /update_pass
      * @method  get
      * @url_test http://localhost/tp/home/index/update_pass/user_phone/18942433927/user_pass/123/user_newPass/94682431
@@ -267,39 +283,7 @@ class IndexController extends Controller
     }
 
 
-    /**  接口说明 ：用户修改资料(学历 性别 年龄等 一次修改一次)
-     * @action /update_userInfo
-     * @method  get
-     * @@url_test http://localhost/tp/index.php/home/index/update_userInfo/user_token/MTg5NDI0MzM5Mjc=/user_info//user_data/
-     * @param  String $user_token
-     * @param  String $user_info
-     * @param  String $user_data
-     * @return array(status,msg)
-     */
-
-    public function update_userInfo($user_token = null, $user_info = null, $user_data = null)
-    {
-        if ($this->tokenIsEmpty($user_token)) {
-            $User = M("User");
-            $User->$user_info = $user_data;
-
-            $status = $User->where("user_token='%s'", $user_token)->save();
-            if ($status) {
-                $arr = array('status' => $status, 'msg' => '修改信息成功');
-                echo json_encode($arr);
-            } else {
-                $arr = array('status' => $status, 'msg' => '修改信息失败');
-                echo json_encode($arr);
-            }
-        } else {
-            $arr = array('status' => -1, 'msg' => 'token过期');
-            echo json_encode($arr);
-        }
-
-    }
-
-
-    /**  接口说明 ：获取用户个人信息
+    /**  接口说明 ：5.8获取用户个人信息
      * @action /get_userInfo
      * @method  get
      * @url_test http://localhost/tp/home/index/get_userInfo/user_token/MTg5NDI0MzM5Mjc=
@@ -332,7 +316,7 @@ class IndexController extends Controller
 
     //TODO  2、社区共享
 
-    /**  接口说明 ：管理员发布公告
+    /**  接口说明 ：6.1 发布公告
      * @action /pub_notice
      * @method  get
      * @url_test http://localhost/tp/home/index/pub_notice/user_phone/18942433927/user_token
@@ -370,7 +354,7 @@ class IndexController extends Controller
     }
 
 
-    /**  接口说明 ：获取公告数据
+    /**  接口说明 ：6.2 获取公告列表
      * @action /get_notices
      * @method  get
      * @url_test http://localhost/tp/home/index/get_notices/user_token/MTg5NDI0MzM5Mjc=
@@ -401,13 +385,12 @@ class IndexController extends Controller
     }
 
 
-    /**  接口说明 ：用户发布话题帖子
+    /**  接口说明 ：6.3 发布话题（帖子） 上传图片   -4.22修改
      * @action /pub_topic
      * @method  get
      * @url_test http://localhost/tp/home/index/pub_topic/user_phone/18942433927/user_id/111122/user_token/MTg5NDI0MzM5Mjc=/topic_title/topic_title/topic_content/topic_content/topic_picture/topic_picture
      * @param  string $topic_title
      * @param  string $topic_content
-     * @param  string $topic_picture
      * @param  string $user_token
      * @return array(status,msg)
      */
@@ -415,30 +398,224 @@ class IndexController extends Controller
     public function pub_topic($topic_title = null, $topic_content = null,
                               $user_token = null)
     {
-        $topic = M('Topic');
-        if ($this->tokenIsEmpty($user_token)) {
+
+//        $topic_picture = $this->uploadPic_ReturnPicName();
+
+
+        $upload = new \Think\Upload();// 实例化上传类
+        $upload->maxSize = 3145728;// 设置附件上传大小
+        $upload->method = 'get';// 设置提交方式默认是POST
+//        $upload->exts = array('jpg', 'gif', 'png', 'jpeg');// 设置附件上传类型（留空为不限制），使用数组或者逗号分隔的字符串设置，默认为空
+        $upload->mimes = '';// 允许上传的文件类型（留空为不限制），使用数组或者逗号分隔的字符串设置，默认为空
+        $upload->saveExt = '';// 上传文件的保存后缀，不设置的话使用原文件后缀
+        // $upload->saveName = '';// 上传文件的保存规则，支持数组和字符串方式定义
+        $upload->rootPath = './Uploads/'; // 设置附件上传根目录
+        $upload->autoSub = false;           //自动使用子目录保存上传文件 默认为true
+        $upload->hash = false;           //是否生成文件的hash编码 默认为true
+        $upload->savePath = ''; // 设置附件上传（子）目录
+//        $upload->subName  =     ''; // 	子目录创建方式，采用数组或者字符串方式定义
+//        $upload->replace  =     ''; // 	存在同名文件是否是覆盖，默认为false
+//        $upload->callback  =     ''; // 	检测文件是否存在回调，如果存在返回文件信息数组
+        // 上传文件
+        $info = $upload->upload(); //
+//        $info   =   $upload->uploadOne($_FILES['photo']); // 一次上传一个文件
+        if (!$info) {// 上传错误提示错误信息
+            echo "上传失败";
+            $this->error($upload->getError());
+        } else {// 上传成功
+            $topic_picture = null;
+            foreach ($info as $file) {
+                $topic_picture = $file['savepath'] . $file['savename'];
+            }
+
+
+            $topic = M('Topic');
+            if ($this->tokenIsEmpty($user_token)) {
 //            echo "不为空";//判断token是否为空
-            $topic->user_token = $user_token;
-            $topic->topic_title = $topic_title;
-            $topic->topic_content = $topic_content;
-            // 发布需求任务
-            $status = $topic->add();
-            if ($status) {
-                $arr = array('status' => $status, 'msg' => '用户话题公告成功');
-                echo json_encode($arr);
+                $topic->user_token = $user_token;
+                $topic->topic_picture = $topic_picture;
+                $topic->topic_title = $topic_title;
+                $topic->topic_content = $topic_content;
+                // 发布需求任务
+                $status = $topic->add();
+                if ($status) {
+                    $arr = array('status' => $status, 'msg' => '用户话题公告成功');
+                    echo json_encode($arr);
+                } else {
+                    $arr = array('status' => $status, 'msg' => '用户话题公告失败');
+                    echo json_encode($arr);
+                }
+
             } else {
-                $arr = array('status' => $status, 'msg' => '用户话题公告失败');
+
+                $arr = array('status' => -1, 'msg' => 'token过期');
                 echo json_encode($arr);
             }
 
-        } else {
+        }
 
+
+    }
+
+
+    /**  接口说明 ：6.4发表评论（to话题）
+     * @action /pub_topic_comment
+     * @method  get
+     * @url_test http://localhost/tp/home/index/pub_topic_comment/user_token/MTg5NDI0MzM5Mjc=/topic_id/2/content/我是大神，我会ky success的
+     * user_token%20/MTg5NDI0MzM5Mjc=/content/content/topic_id/4654
+     * @param  string $user_token
+     * @param  string $topic_id
+     * @param  string $content
+     * @return array(status,msg)
+     */
+
+    public
+    function pub_topic_comment($topic_id = null, $content = null, $user_token = null)
+    {
+        if (true) {
+            $Comment = M('Topic_comment');
+//            echo "不为空";//判断token是否为空
+//            $Comment->user_name = $user_phone;
+            $Comment->user_token = $user_token;
+            $Comment->topic_id = $topic_id;
+            $Comment->content = $content;
+            // 发布需求任务
+            $status = $Comment->add();
+            if ($status) {
+                $topic = $Comment->order('comment_time  desc')->field('comment_id , comment_time')->find();
+                if ($topic) {
+                    $arr = array('status' => 1, 'msg' => '用户发表评论成功', 'topic' => $topic);
+                    echo json_encode($arr);
+                } else {
+                    $arr = array('status' => 0, 'msg' => '用户发表评论失败');
+                    echo json_encode($arr);
+                }
+            }
+        } else {
             $arr = array('status' => -1, 'msg' => 'token过期');
             echo json_encode($arr);
         }
     }
 
-    /**  接口说明 ：用户发布共享需求
+
+    /**  接口说明 ：6.5 删除话题（帖子）      - 4.22 楼主可以删除该话题和下面的评论
+     * @action /delete_topic
+     * @method  get
+     * @url_test http://localhost/tp/home/index/delete_topic/topic_id/2/
+     * @param  string $topic_id
+     * @return array(status,msg)
+     */
+
+    public function delete_topic($topic_id = null)
+    {
+        if (true) {
+            $Topic = M('Topic');//删除当前话题
+            $status = $Topic->where('topic_id=%d', $topic_id)->delete();
+
+//            $Comment = M('Topic_comment');//删除评论
+//            $status2 = $Comment->where('topic_id=%d', $topic_id)->delete();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => '删除该话题和下面的评论成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => '删除该话题和下面的评论失败');
+                echo json_encode($arr);
+            }
+        }
+    }
+
+
+    /**  接口说明 ：6.6 删除一条评论（只有楼主可以删除话题下面的评论）
+     * @action /delete_topic_comment
+     * @method  get
+     * @url_test http://localhost/tp/home/index/delete_topic_comment/comment_id/2/
+     * user_token%20/MTg5NDI0MzM5Mjc=/content/content/topic_id/4654
+     * @param  string $comment_id
+     * @return array(status,msg)
+     */
+
+    public function delete_topic_comment($comment_id = null)
+    {
+        if (true) {
+            $Comment = M('Topic_comment');
+            $status = $Comment->where('comment_id=%d', $comment_id)->delete();
+
+            if ($status) {
+
+                $arr = array('status' => 1, 'msg' => '楼主删除一条评论成功', 'topic' => $comment_id);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => '楼主删除一条评论失败');
+                echo json_encode($arr);
+            }
+        }
+
+    }
+
+
+    /**  接口说明 ：6.7 获取话题列表数据
+     * @action /get_topicS
+     * @method  get
+     * @url_test http://localhost/tp/home/index/get_topicS/
+     * @table Topic
+     * @return array(topic_id,topic_title,topic_content,topic_picture,topic_time,user_id,comment_num)
+     */
+    public function get_topicS()
+    {
+        if (true) {
+            $topics = M()->table(array('user' => 'us', 'topic' => 'tp'))->
+            where(array('us.user_token = tp.user_token'))->
+            field('us.user_name , us.user_icon , tp.topic_title , tp.topic_content , tp.topic_picture , tp.topic_id , tp.comment_num , tp.pub_topic_time')->
+            select();
+
+            if ($topics) {
+                $arr = array('status' => 1, 'msg' => '获取话题数据成功', 'topics' => $topics);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => '获取话题数据失败', 'topics' => $topics);
+                echo json_encode($arr);
+            }
+        } else {
+            $arr = array('status' => -1, 'msg' => 'token过期', 'userInfo' => null);
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：6.8浏览指定话题包括下面的评论
+     * @action /look_topic
+     * @method  get
+     * @url_test http://localhost/tp/home/index/look_topic/topic_id/2
+     * @table topic && topic_comment
+     * @param  String $topic_id
+     * @return array( us.user_name , us.user_icon ,tp.content,tp.comment_time,tp.comment_id )
+     */
+    public function look_topic($topic_id = null)
+    {
+        if (true) {
+            //获取评论
+//            $Topic_comment = M("Topic_comment");
+//            $topic_commentS = $Topic_comment->where("topic_id='%d'", $topic_id)->select();
+
+            $topic_commentS = M()->table(array('user' => 'us', 'topic_comment' => 'tp'))->where(array('tp.topic_id =' . $topic_id, 'us.user_token = tp.user_token'))->
+            field('us.user_token , us.user_name , us.user_icon ,tp.content,tp.comment_time,tp.comment_id')->select();
+
+            if ($topic_commentS) {
+
+                $arr = array('status' => 1, 'msg' => '获取话题数据成功', 'topic_commentS' => $topic_commentS);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => '获取话题数据失败', 'topic_commentS' => $topic_commentS);
+                echo json_encode($arr);
+            }
+        } else {
+            $arr = array('status' => -1, 'msg' => 'token过期', 'userInfo' => null);
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：6.9发布共享需求
      * @action /pub_need
      * @method  get
      * @url_test http://localhost/tp/home/index/pub_need/user_token/MTg5NDI0MzM5Mjc=/need_title
@@ -483,7 +660,7 @@ class IndexController extends Controller
     }
 
 
-    /**  接口说明 ：获取对应的共享需求列表
+    /**  接口说明 ：6.11获取对应的共享需求列表
      * @action /get_needList
      * @method  get
      * @url_test http://localhost/tp/home/index/get_needList/need_type/1
@@ -511,6 +688,29 @@ class IndexController extends Controller
 
     }
 
+    /**  接口说明 ：6.12我要帮
+     * @action /take_need
+     * @method  get
+     * @url_test http://localhost/tp/home/index/take_need/need_id/1
+     * @param  string $need_id
+     * @return array(status,msg)
+     */
+
+    public function take_need($need_id = null)
+    {
+        $Need = M('Need');
+        $Need->need_status = 2;  //用户选择我要帮
+        $status = $Need->where('need_id=%d', $need_id)->save();
+        if ($status) {
+            $arr = array('status' => 1, 'msg' => '我要帮成功');
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => '我要帮失败');
+            echo json_encode($arr);
+        }
+
+    }
+
 
 
 
@@ -519,15 +719,16 @@ class IndexController extends Controller
 
     //TODO  3、首页
 
-
-    /**  接口说明 ：发布我要吃饭
+//7.1我要吃
+    /**  接口说明 ：7.1.1用户发布我要吃的饭菜
      * @action /pub_eat
      * @method  get
-     * @url_test http://localhost/tp/home/index/pub_eatFood/user_token/MTg5NDI0MzM5Mjc=/order_price/150/order_title/eat%20food/order_type/1/order_res_time/01113/order_note/do%20quick/order_pub_userId/142/strArr
+     * @url_test http://localhost/tp/home/index/pub_eatFood/user_token/MTg5NDI0MzM5Mjc=/order_price/150/order_title/eat%20food/order_type/1/order_res_time/252525/order_expect_time/303030/order_note/do%20quick/strArr
      * @param  String $user_token
      * @param  String $order_title
      * @param  String $order_price
      * @param  String $order_type
+     * @param  String $order_expect_time
      * @param  String $order_res_time
      * @param  String $order_note
      * @param  String $eatStrArr
@@ -537,31 +738,35 @@ class IndexController extends Controller
 //       URL test 不允许有特殊字符 所以eatARR默认有值
 
     public function pub_eatFood($user_token = null, $order_title = null, $order_price = null,
-                                $order_type = null, $order_res_time = null, $order_note = null, $eatStrArr = "红烧茄子,2/烧鸭腿,3/烧鸡腿,4")
+                                $order_type = null, $order_res_time = null, $order_expect_time = null, $order_note = null, $eatStrArr = "紫菜comma0comma3period青菜comma1comma3period白菜comma2comma4")
 
     {
         if ($this->tokenIsEmpty($user_token)) {
 //
-            $food_id = null;
+            $food_id = time(); //取当前时间戳作为菜品编号
             $food_name = null;
+            $food_size = null;
             $food_num = null;
             $foodStatus = null;
-            $foodArr = explode('/', $eatStrArr);// 红烧茄子,2   烧鸭腿,3   烧鸡腿,4
+            $foodArr = explode('period', $eatStrArr);// 红烧茄子,1,2    烧鸭腿,2,3   烧鸡腿,0,4
             for ($index = 0; $index < count($foodArr); $index++) {
-                $cai = explode(',', $foodArr[$index]);
+                $cai = explode('comma', $foodArr[$index]);
                 for ($ind = 0; $ind < count($cai); $ind++) {
                     switch ($ind) {
                         case 0:
                             $food_name = $cai[$ind];
                             break;
                         case 1:
+                            $food_size = $cai[$ind];
+                            break;
+                        case 2:
                             $food_num = $cai[$ind];
                             break;
                     }
                 }
                 $Eat_food = M("Eat_food");
-                $food_id = time(); //取当前时间戳作为菜品编号
                 $Eat_food->food_name = $food_name;
+                $Eat_food->food_size = $food_size;
                 $Eat_food->food_num = $food_num;
                 $Eat_food->food_id = $food_id;
                 $foodStatus = $Eat_food->add();
@@ -574,6 +779,8 @@ class IndexController extends Controller
                 $Eat_order->order_price = $order_price;
                 $Eat_order->order_type = $order_type;
                 $Eat_order->order_res_time = $order_res_time;
+                $Eat_order->order_expect_time = $order_expect_time;
+                $Eat_order->eatStrArr = $eatStrArr;
                 $Eat_order->order_note = $order_note;
                 $Eat_order->user_token = $user_token;
                 // 发布需求任务
@@ -597,7 +804,8 @@ class IndexController extends Controller
     }
 
 
-    /**  接口说明 ：获取所有定做饭订单list
+    // 7.2我要做
+    /**  接口说明 ：7.2.1获取我要吃饭的列表List
      * @action /get_eatFoodList
      * @method  get
      * @url_test http://localhost/tp/home/index/get_eatFoodList/
@@ -608,17 +816,10 @@ class IndexController extends Controller
     public function get_eatFoodList()
     {
 
-        $Eat_order = M("Eat_order");
-        $eat_orderS = $Eat_order->select();
+        $eat_orderS = M()->table(array('Eat_order' => 'eo', 'user' => 'us'))->where(array('us.user_token = eo.user_token', 'order_status=1'))->
+        field('us.user_name,us.user_phone,us.user_address,eo.order_id,eo.order_title,eo.order_price,eo.order_type,eo.order_note,eo.eatStrArr,eo.order_res_time,eo.order_expect_time')->select();
         if ($eat_orderS) {
-            //获取food_id对应的菜品数组
-            $Eat_order = M("Eat_food");
 
-            $Eat_order->select();
-
-            foreach ($eat_orderS as $k => $v) {
-                echo $k . 'k是什么' . $v['food_id'] . "<br>";
-            }
             $arr = array('status' => 1, 'msg' => 'successful 获取所有定做饭订单成功', 'eat_orderS' => $eat_orderS);
             echo json_encode($arr);
         } else {
@@ -629,31 +830,36 @@ class IndexController extends Controller
     }
 
 
-    /**  接口说明 ：厨师查看定做订单详情(单个) （eat）
-     * @action /get_eatFoodItem
+    /**  接口说明 ：7.2.2 厨师接单  厨师觉得自己可以做，可以接单
+     * @action /take_order
      * @method  get
-     * @url_test http://localhost/tp/home/index/get_eatFoodItem/food_id/1492084342
+     * @url_test http://localhost/tp/home/index/take_order/user_token/MTIzNA==/order_id/59
      * @table notice
-     * @param  String $food_id
+     * @param  String $order_id
+     * @param  String $user_token
      * @return array(food_name,food_num)
      */
 
-    public function get_eatFoodItem($food_id = null)
+    public function take_order($order_id = null, $user_token)
     {
 
-        $Eat_food = M("Eat_food");
-        $eat_food = $Eat_food->where("food_id=%d", $food_id)->field('food_name,food_num')->select();
-        if ($eat_food) {
-            $arr = array('status' => 1, 'msg' => 'successful 获取所有定做饭订单成功', 'eat_food' => $eat_food);
+        $Eat_order = M("Eat_order");
+        $Eat_order->order_status = 2;//标识厨师已经接单
+        $Eat_order->cook_user_token = $user_token;//标识用户已经接单
+        $status = $Eat_order->where("order_id=%d", $order_id)->save();
+        if ($status) {
+            $arr = array('status' => 1, 'msg' => 'successful 厨师接单成功');
             echo json_encode($arr);
         } else {
-            $arr = array('status' => 0, 'msg' => 'failed 获取所有定做饭订单失败', 'eat_food' => $eat_food);
+            $arr = array('status' => 0, 'msg' => 'failed     厨师接单失败');
             echo json_encode($arr);
         }
 
     }
 
-    /**  接口说明 ：获得所有厨师发布的菜品
+    //7.3 推荐
+
+    /**  接口说明 ：7.3.1获取所有厨师的菜品列表List
      * @action /get_makeFoodList
      * @method  get
      * @url_test http://localhost/tp/home/index/get_makeFoodList/
@@ -664,7 +870,7 @@ class IndexController extends Controller
     {
         if (true) {
 //            $Make_order = M("Make_order");
-            $makeOrderList = M()->table(array('user' => 'us', 'make_order' => 'mk'))->order('order_pub_time desc')->where(array('`us`.user_token = `mk`.user_token', 'order_status=1'))->field('us.user_name , mk.order_id , mk.order_title ,mk.food_description ,mk.order_price ,mk.order_num ,mk.order_pic  ')->select();
+            $makeOrderList = M()->table(array('user' => 'us', 'make_order' => 'mk'))->order('order_pub_time desc')->where(array('`us`.user_token = `mk`.user_token', 'order_status=1'))->field('us.user_name , mk.order_id , mk.order_title ,mk.food_description ,mk.order_price ,mk.order_num ,mk.order_pic, mk.order_type ')->select();
 //            $makeOrderList = $Make_order->order('order_pub_time desc')->where('order_status=%d',1)->field('user_token,order_id,order_title, food_description ,order_price, order_num , order_pic')->select();
             if ($makeOrderList) {
                 $arr = array('status' => 1, 'msg' => 'successful 获得所有厨师发布的菜品成功', 'makeOrderList' => $makeOrderList);
@@ -678,7 +884,7 @@ class IndexController extends Controller
         }
     }
 
-    /**  接口说明 ：查看做饭菜品详情页(单个) （make）
+    /**  接口说明 ：7.3.2查看做饭菜品详情页(单个)（make）
      * @action /get_eatFoodItem
      * @method  get
      * @url_test http://localhost/tp/home/index/look_makeFood/order_id/43
@@ -690,15 +896,17 @@ class IndexController extends Controller
     public function look_makeFood($order_id = null)
     {
 
+        $user_token = M('Make_order')->where('order_id=%d', $order_id)->getfield('user_token');//获取token 得到厨师的信息
 
-        $user_token = M('Make_order')->where('order_id=%d', $order_id)->getfield('user_token');//获取token 得到用户的信息
-        $make_orderList = M('Make_order')->where("user_token='%s'", $user_token)->field('order_title , order_pic , order_num, order_id')->select();
+        $condition['mk.user_token'] = $user_token;
+        $condition['us.user_token'] = $user_token;
+        $condition['_logic'] = 'AND';
 
-//        SELECT order_comment.comment_content , order_comment.average , user.user_icon , user.user_name FROM `order_comment` ,user WHERE order_comment.order_id = 43 AND user.user_token = order_comment.user_token
+        $make_orderList = M()->table(array('user' => 'us', 'make_order' => 'mk'))->where($condition)->field('us.user_name , mk.order_id , mk.order_title ,mk.food_description ,mk.order_price ,mk.order_num ,mk.order_pic, mk.order_type')->select();
+
 
         $orderComment = M()->table(array('user' => 'us', 'order_comment' => 'oc'))->where(array('oc.order_id =' . $order_id, 'us.user_token = oc.user_token'))->
         field('us.user_name , us.user_icon ,oc.comment_content,oc.average ,oc.comment_time')->select();
-
 
         if ($orderComment) {
 
@@ -712,7 +920,309 @@ class IndexController extends Controller
     }
 
 
-    /**  接口说明 ：获取首页今天广告位的饭菜轮播图 3张图片和对应的order_id
+    function testlihe($a = null)
+    {
+        if ($a == 0) {
+            echo "我是零";
+            return;
+        }
+        echo "你好";
+    }
+
+    // 7.4 购物车
+
+    /**  接口说明 ：7.4.1 加入购物车(一个菜品)======如果是同一个商品点击多次只有数量加1 ，否者就是一个新的购物车订单
+     * @action /add_shopCart
+     * @method  get
+     * @url_test http://localhost/tp/home/index/add_shopCart/user_token/MTg5NDI0MzM5Mjc=/order_id/43/order_title/红烧鱼/order_pic/58f203d365a99.jpg/order_price/100/order_type/1/order_num/3
+     * @table Make_order
+     * @param  String $user_token
+     * @param  int $order_id
+     * @param  String $order_title
+     * @param  String $order_pic
+     * @param  String $order_price
+     * @param  String $order_type
+     * @param  String $order_num
+     * @return array(mk.order_id , mk.order_title ,mk.order_food_description ,mk.order_price ,mk.order_num ,mk.order_pic )
+     */
+
+    public function add_shopCart($user_token = null, $order_id = null, $order_title = null, $order_pic = null, $order_price = null, $order_num = null, $order_type = null)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+            if ($order_num == 0) {
+                $Shopping_cart = M('Shopping_cart');
+                $condition['user_token'] = $user_token;
+                $condition['order_id'] = $order_id;
+                $condition['_logic'] = 'AND';
+                $Shopping_cart->where($condition)->delete();
+                $arr = array('status' => 1, 'msg' => ' successful 提交数量是0,已经清理购物车');
+                echo json_encode($arr);
+                return;
+            }
+            $Shopping_cart = M('Shopping_cart');
+            //使用数组作为查询条件
+            $condition['user_token'] = $user_token;
+            $condition['order_id'] = $order_id;
+            $condition['_logic'] = 'AND';
+            $data = M('Shopping_cart')->where($condition)->field('order_id')->find();
+//            echo $data['order_id']."是否存在重复的order_id";
+            if ($data['order_id'] == $order_id) {
+//                echo "已经存在该订单,只更新数量";
+                $Shopping_cart->order_num = $order_num;
+                $Shopping_cart->order_allPrice = $order_num * $order_price;
+                $status = $Shopping_cart->where("user_token='%s'", $user_token)->save();
+                if ($status) {
+                    $arr = array('status' => 1, 'msg' => 'successful 已经存在该订单,只更新数量和总价');
+                    echo json_encode($arr);
+                } else {
+                    $arr = array('status' => 0, 'msg' => 'failed 已经存在该订单,更新数量和总价失败');
+                    echo json_encode($arr);
+                }
+            } else {
+//                echo "正在创建新的购物车订单";
+                $Shopping_cart->user_token = $user_token;
+                $Shopping_cart->order_id = $order_id;
+                $Shopping_cart->order_title = $order_title;
+                $Shopping_cart->order_pic = $order_pic;
+                $Shopping_cart->order_type = $order_type;
+                $Shopping_cart->order_num = $order_num;
+                $Shopping_cart->order_price = $order_price;
+                $Shopping_cart->order_allPrice = $order_num * $order_price;
+                $status = $Shopping_cart->add();
+                if ($status) {
+                    $arr = array('status' => 1, 'msg' => 'successful 加入购物车成功,正在创建新的购物车订单');
+                    echo json_encode($arr);
+                } else {
+                    $arr = array('status' => 0, 'msg' => 'failed 加入购物车失败，创建新的购物车订单失败');
+                    echo json_encode($arr);
+                }
+            }
+
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+    /**  接口说明 ：7.4.2 查看购物车
+     * @action /look_shopCart
+     * @method  get
+     * @url_test http://localhost/tp/home/index/look_shopCart/user_token/MTg5NDI0MzM5Mjc=
+     * @table Make_order
+     * @param  String $user_token
+     * @return array( )
+     */
+    public
+    function look_shopCart($user_token = null)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+
+            $Model = M()->table(array('Shopping_cart' => 'sc', 'make_order' => 'mo'));
+
+            $field = 'sc.sc_id , sc.order_id , sc.order_title , sc.order_pic ,sc.order_price ,sc.order_allPrice , sc.order_type, sc.order_num ,mo.order_num AS max_num';
+            $condition['sc.user_token'] = $user_token;
+            $condition['_string'] = 'sc.order_id = mo.order_id';
+            $condition['_logic'] = 'AND';
+            $scList =  $Model->where($condition)->field($field)->select();
+            if ($scList) {
+                $arr = array('status' => 1, 'msg' => 'successful 查看购物车成功', 'scList' => $scList);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 查看购物车失败', 'scList' => $scList);
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+
+    /**  接口说明 ：7.4.3 更新购物车订单数量
+     * @action /update_shopCart
+     * @method  get
+     * @url_test http://localhost/tp/home/index/update_shopCart/sc_id/2/order_num/10/order_price/100
+     * @table Make_order
+     * @param  String $sc_id
+     * @param  String $order_num
+     * @param  String $order_price
+     * @return array( )
+     */
+    public
+    function update_shopCart($sc_id = null, $order_num = null, $order_price = null)
+    {
+        if (true) {
+            $Shopping_cart = M('Shopping_cart');
+            $Shopping_cart->order_num = $order_num;
+            $Shopping_cart->order_allPrice = $order_price * $order_num;
+            $scList = $Shopping_cart->where("sc_id='%s'", $sc_id)->save();
+            if ($scList) {
+                $arr = array('status' => 1, 'msg' => 'successful 更新购物车订单数量成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 更新购物车订单数量失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+
+
+
+    /**  接口说明 ：7.4.4 删除购物车订单
+     * @action /delete_shopCart
+     * @method  get
+     * @url_test http://localhost/tp/home/index/delete_shopCart/scIdArr/4next5next6next7
+     * @table Make_order
+     * @param  String array $sc_id
+     * @return array()
+     */
+    //$scIdArr是一个连接订单的数组字符串 举例 4next5next6next7 订单号之间用next分割标识有4 5 6 号订单被选中了
+    public function delete_shopCart($sc_id = null)
+    {
+        if (true) {
+            $Shopping_cart = M('Shopping_cart');
+            $status = $Shopping_cart->where("sc_id=%d", $sc_id)->delete();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'successful 删除购物车订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 删除购物车订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+
+    /**  接口说明 ：7.4.5 结算购物车
+     * @action /pay_shopCart
+     * @method  get
+     * @url_test http://localhost/tp/home/index/pay_shopCart/$user_token/MTg5NDI0MzM5Mjc=/address/佛职院/expect_time/232323/orderArrInfo
+     * @table Make_order
+     * @param  String $user_token
+     * @param  String $address
+     * @param  String $expect_time
+     * @param  String $orderArrStr
+     * @return array( )
+     */
+
+    //$OrderArrInfo="订单编号comma菜名comma图片comma数量comma价钱comma类型period菜名comma图片comma数量comma价钱comma类型period订单编号comma菜名comma图片comma数量comma价钱comma类型")
+
+    public function pay_shopCart($user_token = null, $address = null, $expect_time = null, $orderArrStr = "43comma红烧鱼comma叉烧图片1comma2comma100comma1period10comma番茄炒蛋2comma番茄炒蛋2comma4comma200comma2")
+    {
+        if (true) {
+            $status = null;
+            $id = null;
+            $title = null;
+            $pic = null;
+            $num = null;
+            $price = null;
+            $type = null;
+            $Food_order = M('Food_order');
+            $food = explode('period', $orderArrStr);
+            for ($i = 0; $i < count($food); $i++) {
+                $arr = explode('comma', $food[$i]);
+                for ($n = 0; $n < count($arr); $n++) {
+                    switch ($n) {
+                        case 0:
+                            $id = $arr[$n];
+                            break;
+                        case 1:
+
+                            $title = $arr[$n];
+                            break;
+                        case 2:
+                            $pic = $arr[$n];
+
+                            break;
+                        case 3:
+                            $num = $arr[$n];
+
+                            break;
+                        case 4:
+                            $price = $arr[$n];
+
+                            break;
+                        case 5:
+                            $type = $arr[$n];
+
+                            break;
+
+                    }
+                }
+                $cook_user_token = M('Make_order')->where(array('order_id' => $id, 'user_token' => $user_token))->getfield('user_token');//查询厨师的token存入订单数据库
+                $Food_order->order_id = $id;
+                $Food_order->title = $title;
+                $Food_order->pic = $pic;
+                $Food_order->price = $price;
+                $Food_order->all_price = $price * $num;
+                $Food_order->num = $num;
+                $Food_order->type = $type;
+                $Food_order->user_token = $user_token;
+                $Food_order->cook_user_token = $cook_user_token;
+                $Food_order->address = $address;
+                $Food_order->expect_time = $expect_time;
+                // 添加购物车 插入订单数据库
+                $status = $Food_order->add();
+                if ($status) {
+//                    同时删除购物车记录
+                    M('Shopping_cart')->where('order_id=%d', $id)->delete();
+                }
+
+            }
+
+
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'successful 结算购物车成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 结算购物车失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+
+    /**  接口说明 ：7.4.4 删除购物车订单
+     * @action /pay_shopCart
+     * @method  get
+     * @url_test http://localhost/tp/home/index/pay_shopCart/
+     * @table Make_order
+     * @param  String array $scIdArr
+     * @return array()
+     */
+    //$scIdArr是一个连接订单的数组字符串 举例 4next5next6next7 订单号之间用next分割标识有4 5 6 号订单被选中了
+    public function pa_shopCart($scIdArr = null)
+    {
+        if (true) {
+            $status = null;
+            $Shopping_cart = M('Shopping_cart');
+            $arr = explode('next', $scIdArr);
+            if (count($scIdArr) == 1) {
+                $status = $Shopping_cart->where("sc_id=%d", $arr)->delete();
+            } else {
+                foreach ($arr as $item) {
+                    $status = $Shopping_cart->where("sc_id=%d", $item)->delete();
+                }
+            }
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'successful 删除购物车订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 删除购物车订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+//7.5  轮播图
+    /**  接口说明 ：7.5.1获取轮播图广告位
      * @action /get_ad_photo
      * @method  get
      * @url_test http://localhost/tp/home/index/get_ad_photo/
@@ -724,7 +1234,7 @@ class IndexController extends Controller
     {
         if (true) {
 //            where(array('`us`.user_token = `mk`.user_token' , 'order_status=1'))
-            $Ad_photo = M()->table(array('ad_photo' => 'ad', 'make_order' => 'mk', 'user' => 'us'))->where(array('`ad`.order_id = `mk`.order_id', '`us`.user_token = `mk`.user_token'))->field('us.user_name, mk.order_id , mk.order_title ,mk.food_description ,mk.order_price ,mk.order_num ,mk.order_pic ')->select();
+            $Ad_photo = M()->table(array('ad_photo' => 'ad', 'make_order' => 'mk', 'user' => 'us'))->where(array('`ad`.order_id = `mk`.order_id', '`us`.user_token = `mk`.user_token'))->field('us.user_name, mk.order_id , mk.order_title ,mk.food_description ,mk.order_price ,mk.order_num,mk.order_type ,mk.order_pic ')->select();
 //            $Ad_photo=M()->table(array('ad_photo'=>'ad','make_order'=>'mk'))->where('`ad`.order_id = `mk`.order_id')->field('mk.order_id , mk.order_title ,mk.food_description ,mk.order_price ,mk.order_num ,mk.order_pic ')->select();
             if ($Ad_photo) {
                 $arr = array('status' => 1, 'msg' => 'successful 获得所有厨师发布的菜品成功', 'makeOrderList' => $Ad_photo);
@@ -739,12 +1249,33 @@ class IndexController extends Controller
     }
 
 
+   /**@declared  接口说明 ：7.5.2更新轮播图广告位 ======(后台接口)
+     * @action /get_ad_photo
+     * @method  get
+     * @url_test http://localhost/tp/home/index/update_adPhoto/
+     * @table Make_order
+     * @param  $user_token String
+     * @return String result
+     */
+    public function update_adPhoto($user_token)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+         $isManager =   M()->where("user_token ='%s'" , $user_token)->getfield('is_manager');
+            if ($isManager) {
+
+            } else {
+                return;
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
 
 
-    //TODO  4、我的  
 
 
-    //8.1 订单中心 TODO 可能需要调用 get_eatFoodItem 公共接口进去查看订单详情
+    //TODO  4、我的
+
 
     /**  接口说明 ：8.1.1 待接单
      * @action /get_wait_order
@@ -919,6 +1450,8 @@ class IndexController extends Controller
     public function add_address($user_token = null, $name = null, $phone = null, $area = null, $community = null, $address = null)
     {
         if ($this->tokenIsEmpty($user_token)) {
+
+
             $Address_manager = M("Address_manager");
             $Address_manager->user_token = $user_token;
             $Address_manager->name = $name;
@@ -928,6 +1461,9 @@ class IndexController extends Controller
             $Address_manager->address = $address;
             $status = $Address_manager->add();
             if ($status) {
+                $User = M('User');
+                $User->user_address = $address;
+                $User->where("user_token='%s'", $user_token)->save();//保存地址到用户表的地址中 用于交易
                 $arr = array('status' => 1, 'msg' => 'success 添加地址成功');
                 echo json_encode($arr);
             } else {
@@ -952,7 +1488,7 @@ class IndexController extends Controller
     {
         if ($this->tokenIsEmpty($user_token)) {
             $Address_manager = M("Address_manager");
-            $addressList = $Address_manager->field('name , phone , area , community , address ,status ')->select();
+            $addressList = $Address_manager->field('id, name , phone , area , community , address ,status ')->select();
             if ($addressList) {
                 $arr = array('status' => 1, 'msg' => 'success 显示用户添加的地址成功', 'addressList' => $addressList);
                 echo json_encode($arr);
@@ -1048,6 +1584,687 @@ class IndexController extends Controller
     }
 
 
+//8.3 我买到的
+
+//8.3.1共享需求
+// TODO 8.3.1 吃饭订单 （买家角色）
+    /**@declare 8.3.3 做饭订单 （买家角色）
+     *
+     * 吃饭类型status 字段特别说明
+     *
+     * 状态码    执行者和动作------------------买家--------------卖家
+     * 0       客户自己取消的订单-------------全部订单---------全部订单
+     * 1       客户发布成功的订单-------------待接单-------------无
+     * 2       厨师在我要做接单后-------------待送餐-------------进行中
+     * 3       客户确认收货的订单待评价--------已完成-------------已完成
+     *
+     **/
+
+
+//8.3.2 吃饭订单
+    /**  接口说明 ：8.3.2.1 全部订单
+     * @action /all_eatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusAllEatOrder/user_token/MTIz/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cusAllEatOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['eo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['_logic'] = 'AND';
+        $cusAllEatList = M()->table(array('user' => 'us', 'eat_order' => 'eo'))->where($condition)->
+        field('eo.order_status  , eo.order_id ,  eo.order_title , eo.eatStrArr , eo.order_price , eo.order_type , eo.order_note , eo.order_res_time, eo.order_pub_time , us.user_name , us.user_phone , us.user_address')->select();
+        if ($cusAllEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询全部吃饭订单成功', 'cusAllEatList' => $cusAllEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询全部吃饭订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.2.2 待接单
+     * @action /cusWaitEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusWaitEatOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cusWaitEatOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['eo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['eo.order_status'] = 1;                    //状态码是  1  待接单
+        $condition['_logic'] = 'AND';
+        $cusWaitEatList = M()->table(array('user' => 'us', 'eat_order' => 'eo'))->where($condition)->
+        field('eo.order_status  , eo.order_id ,  eo.order_title , eo.eatStrArr , eo.order_price , eo.order_type , eo.order_note , eo.order_res_time, eo.order_expect_time , eo.order_pub_time , us.user_name , us.user_phone , us.user_address')->select();
+        if ($cusWaitEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询待接单吃饭订单成功', 'cusWaitEatList' => $cusWaitEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询待接单吃饭订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.2.3 待送餐
+     * @action /cusDeliveryEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusDeliveryEatOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cusDeliveryEatOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['eo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['eo.order_status'] = 2;                    //状态码是  2  待送餐
+        $condition['_logic'] = 'AND';
+        $cusDeliveryEatList = M()->table(array('user' => 'us', 'eat_order' => 'eo'))->where($condition)->
+        field('eo.order_status  , eo.order_id ,  eo.order_title , eo.eatStrArr , eo.order_price , eo.order_type , eo.order_note , eo.order_res_time, eo.order_expect_time , eo.order_pub_time , us.user_name , us.user_phone , us.user_address')->select();
+        if ($cusDeliveryEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询待送餐吃饭订单成功', 'cusDeliveryEatList' => $cusDeliveryEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询待送餐吃饭订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.2.4 已完成
+     * @action /cusFinishEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusFinishEatOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cusFinishEatOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['eo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['_string'] = 'eo.order_status = 3  '; //已完成订单状态为 3
+        $condition['_logic'] = 'AND';
+        $cusFinishEatList = M()->table(array('user' => 'us', 'eat_order' => 'eo'))->where($condition)->
+        field('eo.order_status  , eo.order_id ,  eo.order_title , eo.eatStrArr , eo.order_price , eo.order_type , eo.order_note , eo.order_res_time, eo.order_expect_time , eo.order_pub_time , us.user_name , us.user_phone , us.user_address')->select();
+        if ($cusFinishEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询待送餐吃饭订单成功', 'cusFinishEatList' => $cusFinishEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询待送餐吃饭订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.2.5 取消订单
+     * @action /cusCancelEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusCancelEatOrder/user_token/MTg5NDI0MzM5Mjc=/order_id/
+     * @table Food_order
+     * @param  String $user_token
+     * @param  String $order_id
+     */
+    public function cusCancelEatOrder($user_token = null, $order_id = null)
+    {
+
+
+        if ($this->tokenIsEmpty($user_token)) {
+
+            $Eat_order = M('Eat_order');
+            $Eat_order->order_status = 0;
+            $status = $Eat_order->where('order_id = %d ', $order_id)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success 查询待送餐吃饭订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 查询待送餐吃饭订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+
+        }
+    }
+
+
+    /**  接口说明 ：8.3.2.6 确认收货
+     * @action /cusConfirmEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusConfirmEatOrder/user_token/MTg5NDI0MzM5Mjc=/order_id/
+     * @table Food_order
+     * @param  String $user_token
+     * @param  String $order_id
+     */
+    public function cusConfirmEatOrder($user_token = null, $order_id = null)
+    {
+
+
+        if ($this->tokenIsEmpty($user_token)) {
+
+            $Eat_order = M('Eat_order');
+            $Eat_order->order_status = 3;
+            $status = $Eat_order->where('order_id = %d ', $order_id)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success 确认收货吃饭订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 确认收货吃饭订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+
+        }
+    }
+
+
+    /**  接口说明 ：8.3.2.7 评价订单
+     * @action /cusCommentEatOrder
+     * @method  get
+     * //     * @url_test http://localhost/tp/home/index/cusCommentEatOrder/user_token/MTg5NDI0MzM5Mjc=/order_id/59/comment/老板做的饭很好吃哦
+     * @table Food_order
+     * @param  String $user_token
+     * @param  String $order_id
+     * @param  String $comment
+     */
+    public function cusCommentEatOrder($user_token = null, $order_id = null, $comment = null)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+
+            $Eat_order = M('Eat_order');
+            $Eat_order->order_status = 5;
+            $Eat_order->order_comment = $comment;
+            $status = $Eat_order->where('order_id = %d ', $order_id)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success 卖家评价订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 卖家评价订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+
+        }
+
+    }
+
+
+  /**  接口说明 ：8.3.2.8 买家查看吃饭订单评价
+     * @action /cusLookCommentEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusLookCommentEatOrder/user_token/MTg5NDI0MzM5Mjc=/order_id/59/
+     * @table Food_order
+     * @param  String $user_token
+     * @param  String $order_id
+     */
+    public function cusLookCommentEatOrder($user_token = null, $order_id = null)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+            //买家自己评论
+            $model = M()->table(array('user' => 'us', 'Eat_order' => 'eo'));
+            $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+            $condition['eo.order_id'] = $order_id; // 查询条件  当前用户的token要等于订单厨师token
+            $condition['_logic'] = 'AND';
+            $field = 'us.user_name , us.user_icon , eo.order_comment ';
+            $cusComments = $model->where($condition)->field($field)->find();
+            //卖家的评论
+           $cook_token = M('Eat_order')->where('order_id=%d' , $order_id)->getfield('cook_user_token');
+            $model = M()->table(array('user' => 'us', 'Eat_order' => 'eo'));
+            $condition['us.user_token'] = $cook_token; // 查询条件 当前用户的token要等于用户的token
+            $condition['eo.order_id'] = $order_id; // 查询条件  当前用户的token要等于订单厨师token
+            $condition['_logic'] = 'AND';
+            $field = 'us.user_name , us.user_icon , eo.order_Cookcomment ';
+            $cookComments = $model->where($condition)->field($field)->find();
+
+            if ($cusComments) {
+                $arr = array('status' => 1, 'msg' => 'success 卖家评价订单成功', 'cusComment'=>$cusComments, 'cookComment'=>$cookComments);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 卖家评价订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+
+        }
+
+    }
+
+
+
+//    /**  接口说明 ：8.3.2.6 查看详情
+//     * @action /cusConfirmEatOrder
+//     * @method  get
+//     * @url_test http://localhost/tp/home/index/cusConfirmEatOrder/user_token/MTg5NDI0MzM5Mjc=/order_id/
+//     * @table Food_order
+//     * @param  String $user_token
+//     * @param  String $order_id
+//     */
+//    public function cusLookEatOrder($user_token = null, $order_id = null)
+//    {
+//
+//
+//        if ($this->tokenIsEmpty($user_token)) {
+//
+//            $Eat_order = M('Eat_order');
+//            $Eat_order->order_status = 3;
+//            $status = $Eat_order->where('order_id = %d ', $order_id)->save();
+//            if ($status) {
+//                $arr = array('status' => 1, 'msg' => 'success 确认收货吃饭订单成功');
+//                echo json_encode($arr);
+//            } else {
+//                $arr = array('status' => 0, 'msg' => 'failed 确认收货吃饭订单失败');
+//                echo json_encode($arr);
+//            }
+//        } else {
+//            self::tokenExpire();
+//
+//        }
+//    }
+
+
+    // todo   8.3.3 做饭订单（买家角色）
+    /**  接口说明 ：8.3.3.1 全部订单
+     * @action /cusAllMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusAllMakeOrder/user_token/MTIz/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cusAllMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['fo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['_logic'] = 'AND';
+        $cusAllEatList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time , fo.pub_time, us.user_name , us.user_phone , us.user_address')->select();
+
+
+        /*        $condition['fo.user_token'] = $user_token; // 查询条件   所有该用户的订单都查询出来 fo.user_token = MTg5NDI0MzM5Mjc=   AND  fo.user_token = us.user_token
+        //        $condition['us.user_token'] = $user_token; // 查询条件   所有该用户的订单都查询出来
+                $condition['_string'] = '`fo.user_token`= `fo.user_token`'; // 查询条件   所有该用户的订单都查询出来
+                $condition['_logic'] = 'AND';
+
+                $makeOrderList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        //        $makeOrderList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+                field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  , us.user_name , us.user_phone , us.user_address')->select();
+        //        echo $makeOrderList;
+                $Model = D();//或者 $Model = D(); 或者 $Model = M();
+                $sql = "select * from `user`";
+                $voList = $Model->query($sql);*/
+
+        if ($cusAllEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询全部订单成功', 'cusAllMakeList' => $cusAllEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询全部订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.3.2 待接单
+     * @action /cusWaitMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusWaitMakeOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     */
+    public function cusWaitMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户表的token
+        $condition['fo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['fo.status'] = 1;
+        $condition['_logic'] = 'AND';
+        $cusEatWaitList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  ,  fo.pub_time,  us.user_name , us.user_phone , us.user_address')->select();
+
+        if ($cusEatWaitList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询全部订单成功', 'cusEatWaitList' => $cusEatWaitList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询全部订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.3.3 代送餐
+     * @action /cusDeliveryMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusDeliveryMakeOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     */
+    public function cusDeliveryMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户表的token
+        $condition['fo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['fo.status'] = 2; // 状态为2的订单
+        $condition['_logic'] = 'AND';
+        $eatDeliveryOrderList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  ,   fo.pub_time, us.user_name , us.user_phone , us.user_address')->select();
+
+        if ($eatDeliveryOrderList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询代送餐成功', 'deliveryOrderList' => $eatDeliveryOrderList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询代送餐失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.3.4 已完成
+     * @action /cusFinishMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusFinishMakeOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     */
+    public function cusFinishMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['fo.user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['_string'] = 'fo.status = 3  OR fo.status = 4'; //订单状态为 3 或 4的订单
+        $condition['_logic'] = 'AND';
+        $eatFinishOrderList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  ,  fo.pub_time,  us.user_name , us.user_phone , us.user_address')->select();
+        if ($eatFinishOrderList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询已完成成功', 'finishOrderList' => $eatFinishOrderList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询已完成失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.3.3.5 确认收货
+     * @action /cusConfirmMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusConfirmMakeOrder/user_token/MTg5NDI0MzM5Mjc=/id/
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     * @param  String $id
+     */
+    public function cusConfirmMakeOrder($user_token = null, $id = null)
+    {
+
+        if ($this->tokenIsEmpty($user_token)) {
+            $Food_order = M('Food_order');
+            $Food_order->status = 3;
+            $status = $Food_order->where('id=%d', $id)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success 确认收货成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 确认收货失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+
+    /**  接口说明 ：8.3.3.6 客户评价订单
+     * @action /cusCommentMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusCommentMakeOrder/user_token/MTg5NDI0MzM5Mjc=/id/3/order_id/43/comment/老板真的好棒呀第二次评价/comment_describe/3/comment_service/5/comment_taste/4
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     * @param  String $order_id
+     * @param  String $id
+     * @param  String $comment
+     * @param  String $comment_describe
+     * @param  String $comment_service
+     * @param  String $comment_taste
+     */
+    public function cusCommentMakeOrder($user_token = null,$order_id, $id = null, $comment = null,$comment_describe = null,$comment_service = null ,$comment_taste =null)
+    {
+
+        if ($this->tokenIsEmpty($user_token)) {
+            $Food_order = M('Food_order');
+            $Food_order->status = 4;
+            $status1 = $Food_order->where('id=%d', $id)->save();
+            if ($status1) {
+                $average = ($comment_describe + $comment_service + $comment_taste) / 3;     //平均评分
+                $Order_comment = M('Order_comment');
+                $Order_comment->id = $id;
+                $Order_comment->order_id = $order_id;
+                $Order_comment->user_token = $user_token;
+                $Order_comment->comment_content = $comment;
+                $Order_comment->comment_describe = $comment_describe;
+                $Order_comment->comment_service = $comment_service;
+                $Order_comment->comment_taste = $comment_taste;
+                $Order_comment->average = $average;
+                $status = $Order_comment->add();
+                if ($status) {
+                    $arr = array('status' => 1, 'msg' => 'success 评价订单成功');
+                    echo json_encode($arr);
+                } else {
+                    $arr = array('status' => 0, 'msg' => 'failed 评价订单失败');
+                    echo json_encode($arr);
+                }
+            }
+
+
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+    /**  接口说明 ：8.3.3.7 客户查看评价
+     * @action /cusLookCommentMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cusLookCommentMakeOrder/user_token/MTg5NDI0MzM5Mjc=/id/2
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     * @param  String $id
+     */
+    public function cusLookCommentMakeOrder($user_token = null ,  $id = null)
+    {
+
+        if ($this->tokenIsEmpty($user_token)) {
+            $u_token  = M('Order_comment')->where('id=%d' , $id)->getfield('user_token');
+            $model =  M()->table(array('order_comment'=>'oc' , 'user'=>'us'));
+            $condition['us.user_token'] = $u_token;
+            $condition['oc.id'] = $id;
+            $condition['_logic'] = 'AND';
+            $field = 'us.user_name , us.user_icon , oc.comment_content , oc.comment_describe ,oc.comment_service , oc.comment_taste';
+           $comment = $model->where($condition)->field($field)->find();
+                if ($comment) {
+                    $arr = array('status' => 1, 'msg' => 'success 客户查看评价成功','comment'=>$comment);
+                    echo json_encode($arr);
+                } else {
+                    $arr = array('status' => 0, 'msg' => 'failed 客户查看评价失败');
+                    echo json_encode($arr);
+                }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+
+
+
+
+
+//8.4 我卖出的
+
+
+//8.4.1共享需求
+
+
+// TODO 8.4.2 吃饭订单 （卖家角色）
+    /**@declare 8.4.3 吃饭订单吃饭类型status 字段特别说明=====================
+     *                                                                    =
+     * 状态码           执行者和动作            买家         卖家                  =
+     * 0         客户自己取消的订单          全部订单       全部订单                =
+     * 1         客户发布成功的订单          待接单             无                   =
+     * 2        厨师在我要做接单后          待送餐           进行中                  =
+     * =
+     * =
+     * 3        客户确认收货的订单待评价    已完成          已完成                   =
+     * 4        客户评价之后的订单已评价                                          =
+     *
+     *
+     * =====================================================================
+     **/
+
+    /**  接口说明 ：8.4.2.1 全部订单
+     * @action /cookAllEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookAllEatOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cookAllEatOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['eo.cook_user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['_logic'] = 'AND';
+        $cookAllEatList = M()->table(array('user' => 'us', 'eat_order' => 'eo'))->where($condition)->
+        field('eo.order_status  , eo.order_id ,  eo.order_title , eo.eatStrArr , eo.order_price , eo.order_type , eo.order_note , eo.order_res_time, eo.order_expect_time , eo.order_pub_time , us.user_name , us.user_phone , us.user_address')->select();
+        if ($cookAllEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询全部吃饭订单成功', 'cookAllEatList' => $cookAllEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询全部吃饭订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+    /**  接口说明 ：8.4.2.2 已弃用*/
+
+    /**  接口说明 ：8.4.2.3 进行中
+     * @action /cookingEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookingEatOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cookingEatOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['eo.cook_user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['eo.order_status'] = 2;                    //状态码是  2  待送餐
+        $condition['_logic'] = 'AND';
+        $cookDeliveryEatList = M()->table(array('user' => 'us', 'eat_order' => 'eo'))->where($condition)->
+        field('eo.order_status  , eo.order_id ,  eo.order_title , eo.eatStrArr , eo.order_price , eo.order_type , eo.order_note , eo.order_res_time, eo.order_expect_time , eo.order_pub_time , us.user_name , us.user_phone , us.user_address')->select();
+        if ($cookDeliveryEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询待送餐吃饭订单成功', 'cookDeliveryEatList' => $cookDeliveryEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询待送餐吃饭订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.4.2.4 已完成
+     * @action /cookFinishEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookFinishEatOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table Food_order
+     * @param  String $user_token
+     */
+    public function cookFinishEatOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['eo.cook_user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['_string'] = 'eo.order_status = 3  '; //已完成订单状态为 3
+        $condition['_logic'] = 'AND';
+        $cookFinishEatList = M()->table(array('user' => 'us', 'eat_order' => 'eo'))->where($condition)->
+        field('eo.order_status  , eo.order_id ,  eo.order_title , eo.eatStrArr , eo.order_price , eo.order_type , eo.order_note , eo.order_res_time, eo.order_expect_time , eo.order_pub_time ,us.user_name , us.user_phone , us.user_address')->select();
+        if ($cookFinishEatList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询待送餐吃饭订单成功', 'cookFinishEatList' => $cookFinishEatList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询待送餐吃饭订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.4.2.5 卖家评价订单
+     * @action /cookCommentEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookCommentEatOrder/user_token/MTIzNA==/order_id/59/comment/这位客户人也很好噢
+     * @table Food_order
+     * @param  String $user_token
+     * @param  String $order_id
+     * @param  String $comment
+     */
+    public function cookCommentEatOrder($user_token = null, $order_id = null, $comment = null)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+
+            $Eat_order = M('Eat_order');
+            $Eat_order->order_status = 5;
+            $Eat_order->order_Cookcomment = $comment;
+            $status = $Eat_order->where('order_id = %d ', $order_id)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success 卖家评价订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 卖家评价订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+
+        }
+    }
+
+
+    /**  接口说明 ：8.4.2.6 卖家查看吃饭订单评价
+     * @action /cookLookCommentEatOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookLookCommentEatOrder/user_token/MTIzNA==/order_id/59/
+     * @table Food_order
+     * @param  String $user_token
+     * @param  String $order_id
+     */
+    public function cookLookCommentEatOrder($user_token = null, $order_id = null)
+    {
+        if ($this->tokenIsEmpty($user_token)) {
+            //卖家自己评论
+            $model = M()->table(array('user' => 'us', 'Eat_order' => 'eo'));
+            $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+            $condition['eo.order_id'] = $order_id; // 查询条件  当前用户的token要等于订单厨师token
+            $condition['_logic'] = 'AND';
+            $field = 'us.user_name , us.user_icon , eo.order_Cookcomment ';
+            $cookComments = $model->field($field)->where($condition)->find();
+            //买家的评论
+            $cook_token = M('Eat_order')->where('order_id=%d' , $order_id)->getfield('user_token');
+            $model = M()->table(array('user' => 'us', 'Eat_order' => 'eo'));
+            $condition['us.user_token'] = $cook_token; // 查询条件 当前用户的token要等于用户的token
+            $condition['eo.order_id'] = $order_id; // 查询条件  当前用户的token要等于订单厨师token
+            $condition['_logic'] = 'AND';
+            $field = 'us.user_name , us.user_icon , eo.order_comment ';
+            $cusComments = $model->where($condition)->field($field)->find();
+//
+            if ($cusComments) {
+                $arr = array('status' => 1, 'msg' => 'success 卖家评价订单成功', 'cusComment'=>$cusComments , 'cookComment'=>$cookComments);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 卖家评价订单失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+
+        }
+
+    }
 
 
 
@@ -1056,6 +2273,309 @@ class IndexController extends Controller
 
 
 
+
+
+
+
+
+
+
+// TODO 8.4.3 做饭订单 （卖家角色）
+    /**@declare 8.4.3 做饭订单
+     * =============================================================
+     * 做饭类型status 字段特别说明
+     *
+     * 状态码        执行者和动作            买家           卖家
+     * 0    厨师自己取消的订单          全部订单         全部订单
+     * 1    客户下单下单成功的订单      待接单             待同意
+     * 2    厨师同意的订单单             待送餐           进行中
+     *
+     * 3    客户确认收货的订单待评价    已完成             已完成
+     * 4    客户评价之后的订单已评价
+     *
+     *================================================================
+     **/
+
+
+    /**  接口说明 ：8.4.3.1 全部订单
+     * @action /cookAllMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookAllMakeOrder/user_token/MTIzNA==/
+     * @table Food_order
+     * @param  String $user_token
+     */
+
+
+    public function cookAllMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['fo.cook_user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['_logic'] = 'AND';
+        $cookAllMakeList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  , fo.pub_time,  us.user_name , us.user_phone , us.user_address')->select();
+
+        if ($cookAllMakeList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询全部订单成功', 'cookAllMakeList' => $cookAllMakeList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询全部订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.4.3.2 待同意
+     * @action /cookWaitMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookWaitMakeOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table eat_order  &&  make_order
+     * @param  String $user_token 卖家用户token
+     */
+    public function cookWaitMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['fo.cook_user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['fo.status'] = 1; //订单状态为 1
+        $condition['_logic'] = 'AND';
+        $cookWaitMakeList = M()->table(array('food_order' => 'fo', 'user' => 'us'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  ,  fo.pub_time, us.user_name , us.user_phone , us.user_address')->select();
+        if ($cookWaitMakeList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询全部订单成功', 'cookWaitMakeList' => $cookWaitMakeList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询全部订单失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.4.3.3 进行中
+     * @action /cookingMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookingMakeOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     */
+    public function cookingMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['fo.cook_user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师token
+        $condition['fo.status'] = 2; //订单状态为 2
+        $condition['_logic'] = 'AND';
+        $cookDeliveryMakeList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  , fo.pub_time,  us.user_name , us.user_phone , us.user_address')->select();
+        if ($cookDeliveryMakeList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询代送餐成功', 'cookDeliveryMakeList' => $cookDeliveryMakeList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询代送餐失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.4.3.4 已完成
+     * @action /cookFinishMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cookFinishMakeOrder/user_token/MTg5NDI0MzM5Mjc=/
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     */
+    public function cookFinishMakeOrder($user_token = null)
+    {
+        $condition['us.user_token'] = $user_token; // 查询条件 当前用户的token要等于用户的token
+        $condition['fo.cook_user_token'] = $user_token; // 查询条件  当前用户的token要等于订单厨师tokenhttp://localhost/tp/home/index/cookFinishMakeOrder/user_token/MTg5NDI0MzM5Mjc=/
+        $condition['_string'] = 'fo.status = 3  OR fo.status = 4'; //订单状态为 3 或 4的订单
+        $condition['_logic'] = 'AND';
+        $cookFinishMakeList = M()->table(array('user' => 'us', 'food_order' => 'fo'))->where($condition)->
+        field('fo.status , fo.id , fo.order_id ,  fo.title , fo.pic , fo.price ,fo.all_price , fo.num , fo.type ,  fo.expect_time  , fo.pub_time,  us.user_name , us.user_phone , us.user_address')->select();
+        if ($cookFinishMakeList) {
+            $arr = array('status' => 1, 'msg' => 'success 查询已完成成功', 'cookFinishMakeList' => $cookFinishMakeList);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询已完成失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ：8.4.3.5 卖家接受订单
+     * @action /acceptMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/acceptMakeOrder/user_token/MTg5NDI0MzM5Mjc=/id/3
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     * @param  String $id
+     */
+    public function acceptMakeOrder($user_token = null ,$id = null)
+
+    {
+        if ($this->tokenIsEmpty($user_token)){
+            $Food_order =  M('Food_order');
+            $Food_order->status = 2;
+            $status = $Food_order->where('id=%d' , $id)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success 卖家接受订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 卖家接受订单失败');
+                echo json_encode($arr);
+            }
+        }
+        self::tokenExpire();
+    }
+
+
+
+ /**  接口说明 ：8.4.3.6 卖家取消订单
+     * @action /cancelMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/cancelMakeOrder/user_token/MTg5NDI0MzM5Mjc=/id/3
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     * @param  String $id
+     */
+    public function cancelMakeOrder($user_token = null ,$id = null)
+
+    {
+        if ($this->tokenIsEmpty($user_token)){
+            $Food_order =  M('Food_order');
+            $Food_order->status = 0;
+            $status = $Food_order->where('id=%d' , $id)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success卖家取消订单成功');
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 卖家取消订单失败');
+                echo json_encode($arr);
+            }
+        }
+        self::tokenExpire();
+    }
+
+
+
+    /**  接口说明 ：8.3.3.7 客户查看评价
+     * @action /lookCommentMakeOrder
+     * @method  get
+     * @url_test http://localhost/tp/home/index/lookCommentMakeOrder/user_token/MTg5NDI0MzM5Mjc=/id/2
+     * @table eat_order  &&  make_order
+     * @param  String $user_token
+     * @param  String $id
+     */
+    public function lookCommentMakeOrder($user_token = null ,  $id = null)
+    {
+
+        if ($this->tokenIsEmpty($user_token)) {
+            $u_token  = M('Order_comment')->where('id=%d' , $id)->getfield('user_token');
+            $model =  M()->table(array('order_comment'=>'oc' , 'user'=>'us'));
+            $condition['us.user_token'] = $u_token;
+            $condition['oc.id'] = $id;
+            $condition['_logic'] = 'AND';
+            $field = 'us.user_name , us.user_icon , oc.comment_content , oc.comment_describe ,oc.comment_service , oc.comment_taste';
+            $comment = $model->where($condition)->field($field)->find();
+            if ($comment) {
+                $arr = array('status' => 1, 'msg' => 'success 客户查看评价成功','comment'=>$comment);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 客户查看评价失败');
+                echo json_encode($arr);
+            }
+        } else {
+            self::tokenExpire();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+//8.5我的钱包
+
+    /**  接口说明 ： 8.5.1 查询余额
+     * @action /put_money
+     * @method  get
+     * @url_test http://localhost/tp/home/index/put_money/user_token/MTg5NDI0MzM5Mjc=/money/1000
+     * @table Order_comment
+     * @param  String $user_token
+     */
+    public function set_money($user_token = null)
+    {
+
+        $User = M("User");
+        $money = $User->where("user_token='%s'", $user_token)->getfield('user_money');
+        if ($money) {
+            $arr = array('status' => 1, 'msg' => 'success 查询余额成功', 'money' => $money);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 查询余额失败');
+            echo json_encode($arr);
+        }
+    }
+
+
+    /**  接口说明 ： 8.5.2 充值
+     * @action /put_money
+     * @method  get
+     * @url_test http://localhost/tp/home/index/put_money/user_token/MTg5NDI0MzM5Mjc=/money/1000
+     * @table Order_comment
+     * @param  String $user_token
+     * @param  String $money
+     */
+    public function put_money($user_token = null, $money = null)
+    {
+
+        $User = M("User");
+        $mn = $User->where("user_token='%s'", $user_token)->getfield('user_money');
+        $m = $mn + $money;
+        $User->user_money = $m;
+        $status = $User->where("user_token='%s'", $user_token)->save();
+        if ($status) {
+            $arr = array('status' => 1, 'msg' => 'success 充值成功', 'money' => $m);
+            echo json_encode($arr);
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 充值失败');
+            echo json_encode($arr);
+        }
+    }
+
+    /**  接口说明 ： 8.5.3 提现
+     * @action /get_money
+     * @method  get
+     * @url_test http://localhost/tp/home/index/get_money/user_token/MTg5NDI0MzM5Mjc=/money/500
+     * @table Order_comment
+     * @param  String $user_token
+     * @param  String $money
+     */
+    public function get_money($user_token = null, $money = null)
+    {
+
+        $User = M("User");
+        $mn = $User->where("user_token='%s'", $user_token)->getfield('user_money');
+        $m = $mn - $money;
+        echo $m;
+        if ($m >= 0) {
+            $User->user_money = $m;
+            $status = $User->where("user_token='%s'", $user_token)->save();
+            if ($status) {
+                $arr = array('status' => 1, 'msg' => 'success 提现成功', 'money' => $m);
+                echo json_encode($arr);
+            } else {
+                $arr = array('status' => 0, 'msg' => 'failed 提现失败');
+                echo json_encode($arr);
+            }
+        } else {
+            $arr = array('status' => 0, 'msg' => 'failed 提现失败 提现金额超过余额');
+            echo json_encode($arr);
+        }
+
+    }
 
 
 
@@ -1117,217 +2637,41 @@ class IndexController extends Controller
     }
 
 
-
-    /**  接口说明 ：上架今日菜色,发布在推荐上显示 提交后显示在 首页>推荐
-     * @action /pub_makeFood_order
+    /**  接口说明 ：上架今日菜色,发布在推荐上显示 提交后显示在 首页>推荐  order_id,order_num
+     * @action /put_today_makeFood
      * @method  get
-     * @url_test http://localhost/tp/home/index/pub_makeFood/user_phone/18942433927/user_token/MTg5NDI0MzM5Mjc=/
-     * order_title/IWillMakeFood/order_num/2/order_price/100/order_pic/000123/food_description/good/order_type/2/
-     * order_makeFood_time/01321321/order_status/1/makeFood_res/fish/makeFood_float/killFish/makeFood_note/wait/order_pub_userId/1234
+     * @url_test http://localhost/tp/home/index/put_today_makeFood/order_idArr/6next7next8/order_numArr/6next7next8
      * @table Make_order
-     * @param  String $user_token
-     * @param  String $order_title
-     * @param  int $order_num = 0
-     * @param  String $order_price
-     * @param  String $food_description
-     * @param  String $order_type
-     * @param  String $order_status 0
-     * @param  String $makeFood_res
-     * @param  String $makeFood_float
-     * @param  String $makeFood_note
+     * @param  int $order_idArr
+     * @param  int $order_numArr
      * @return array(status,msg)
-     * http://localhost/tp/home/index/pub_makeFood_order/user_phone/18942433927/user_token/MTg5NDI0MzM5Mjc=/
-     * order_title/IWillMakeFood/order_num/2/order_price/100/order_pic/000123/food_description/good/order_type/1
      */
-//todo 带图片请求
-    public function pub_makeFood_order($user_token = null, $order_title = null,
-                                       $order_price = null, $food_description = null, $order_type = null,
-                                       $makeFood_res = null, $makeFood_float = null, $makeFood_note = null)
+    public function put_today_makeFood($order_idArr = null, $order_numArr = null)
     {
-        $order_pic = $this->uploadPic_ReturnPicName();
-        //todo  订单数量 后面在添加 状态默认为0
         if (true) {
+//            $order_idArr = array(6,7,8);
+//            $order_numArr = array(4,5,6);
+//            for ($i = 0; $i < count($order_idArr); $i++){
+//            echo $order_idArr[$i];
+//            }
             $Make = M("Make_order");
-            $Make->order_title = $order_title;
-            $Make->order_price = $order_price;
-            $Make->order_pic = $order_pic;
-            $Make->food_description = $food_description;
-            $Make->order_type = $order_type;
-            $Make->user_token = $user_token;
-            $Make->makeFood_res = $makeFood_res;
-            $Make->makeFood_float = $makeFood_float;
-            $Make->makeFood_note = $makeFood_note;
-            // 发布需求任务
-            $status = $Make->add();
+            $status = null;
+            $idArr = explode('next', $order_idArr);
+            $numArr = explode('next', $order_numArr);
+            // fixme 把order_id和order_num数量封装成数组 用循环逐条更新数据库Z
+            for ($i = 0; $i < count($numArr); $i++) {
+                $Make->order_status = 2;
+                $Make->order_num = $numArr[$i];
+                $status = $Make->where("order_id='%s'", $idArr[$i])->save();
+            }
             if ($status) {
-                $arr = array('status' => 1, 'msg' => 'success 发布我要做饭成功');
+                $arr = array('status' => 1, 'msg' => 'success 上架今日菜色成功');
                 echo json_encode($arr);
             } else {
-                $arr = array('status' => 0, 'msg' => 'insert Make_order failed发布我要做饭失败');
+                $arr = array('status' => 0, 'msg' => 'failed  上架今日菜色失败');
                 echo json_encode($arr);
             }
 
-        } else {
-            $arr = array('status' => -1, 'msg' => 'token过期');
-            echo json_encode($arr);
-        }
-    }
-
-
-    /**  接口说明 ：用户对话题发表评论
-     * @action /pub_topic_comment
-     * @method  get
-     * @url_test http://localhost/tp/home/index/pub_topic_comment/user_token/MTg5NDI0MzM5Mjc=/topic_id/2/content/我是大神，我会ky success的
-     * user_token%20/MTg5NDI0MzM5Mjc=/content/content/topic_id/4654
-     * @param  string $user_token
-     * @param  string $topic_id
-     * @param  string $content
-     * @return array(status,msg)
-     */
-
-    public
-    function pub_topic_comment($topic_id = null, $content = null, $user_token = null)
-    {
-        if (true) {
-            $Comment = M('Topic_comment');
-//            echo "不为空";//判断token是否为空
-//            $Comment->user_name = $user_phone;
-            $Comment->user_token = $user_token;
-            $Comment->topic_id = $topic_id;
-            $Comment->content = $content;
-            // 发布需求任务
-            $status = $Comment->add();
-            if ($status) {
-                $topic = $Comment->order('comment_time  desc')->field('comment_id , comment_time')->find();
-                if ($topic) {
-                    $arr = array('status' => 1, 'msg' => '用户发表评论成功', 'topic' => $topic);
-                    echo json_encode($arr);
-                } else {
-                    $arr = array('status' => 0, 'msg' => '用户发表评论失败');
-                    echo json_encode($arr);
-                }
-            }
-        } else {
-            $arr = array('status' => -1, 'msg' => 'token过期');
-            echo json_encode($arr);
-        }
-    }
-
-
-    /**  接口说明 ：楼主直接删除该话题和下面的评论
-     * @action /delete_topic
-     * @method  get
-     * @url_test http://localhost/tp/home/index/delete_topic/topic_id/2/
-     * @param  string $topic_id
-     * @return array(status,msg)
-     */
-
-    public function delete_topic($topic_id = null)
-    {
-        if (true) {
-            $Topic = M('Topic');//删除当前话题
-            $status = $Topic->where('topic_id=%d', $topic_id)->delete();
-
-//            $Comment = M('Topic_comment');//删除评论
-//            $status2 = $Comment->where('topic_id=%d', $topic_id)->delete();
-            if ($status) {
-                $arr = array('status' => 1, 'msg' => '删除该话题和下面的评论成功');
-                echo json_encode($arr);
-            } else {
-                $arr = array('status' => 0, 'msg' => '删除该话题和下面的评论失败');
-                echo json_encode($arr);
-            }
-        }
-    }
-
-
-    /**  接口说明 ：楼主对该话题删除一条评论
-     * @action /delete_topic_comment
-     * @method  get
-     * @url_test http://localhost/tp/home/index/delete_topic_comment/comment_id/2/
-     * user_token%20/MTg5NDI0MzM5Mjc=/content/content/topic_id/4654
-     * @param  string $comment_id
-     * @return array(status,msg)
-     */
-
-    public function delete_topic_comment($comment_id = null)
-    {
-        if (true) {
-            $Comment = M('Topic_comment');
-            $status = $Comment->where('comment_id=%d', $comment_id)->delete();
-
-            if ($status) {
-
-                $arr = array('status' => 1, 'msg' => '楼主删除一条评论成功', 'topic' => $comment_id);
-                echo json_encode($arr);
-            } else {
-                $arr = array('status' => 0, 'msg' => '楼主删除一条评论失败');
-                echo json_encode($arr);
-            }
-        }
-
-    }
-
-
-    /**  接口说明 ：获取话题数据
-     * @action /get_topicS
-     * @method  get
-     * @url_test http://localhost/tp/home/index/get_topicS/
-     * @table Topic
-     * @return array(topic_id,topic_title,topic_content,topic_picture,topic_time,user_id,comment_num)
-     */
-    public function get_topicS()
-    {
-        if (true) {
-            $topics = M()->table(array('user' => 'us', 'topic' => 'tp'))->
-            where(array('us.user_token = tp.user_token'))->
-            field('us.user_name , us.user_icon , tp.topic_title , tp.topic_content , tp.topic_picture , tp.topic_id , tp.comment_num , tp.pub_topic_time')->
-            select();
-
-            if ($topics) {
-                $arr = array('status' => 1, 'msg' => '获取话题数据成功', 'topics' => $topics);
-                echo json_encode($arr);
-            } else {
-                $arr = array('status' => 0, 'msg' => '获取话题数据失败', 'topics' => $topics);
-                echo json_encode($arr);
-            }
-        } else {
-            $arr = array('status' => -1, 'msg' => 'token过期', 'userInfo' => null);
-            echo json_encode($arr);
-        }
-    }
-
-
-    /**  接口说明 ：查看浏览指定话题包括下面的评论
-     * @action /look_topic
-     * @method  get
-     * @url_test http://localhost/tp/home/index/look_topic/topic_id/2
-     * @table topic && topic_comment
-     * @param  String $user_token
-     * @param  String $topic_id
-     * @return array( us.user_name , us.user_icon ,tp.content,tp.comment_time,tp.comment_id )
-     */
-    public function look_topic($topic_id = null)
-    {
-        if (true) {
-            //获取评论
-//            $Topic_comment = M("Topic_comment");
-//            $topic_commentS = $Topic_comment->where("topic_id='%d'", $topic_id)->select();
-
-            $topic_commentS = M()->table(array('user' => 'us', 'topic_comment' => 'tp'))->where(array('tp.topic_id =' . $topic_id, 'us.user_token = tp.user_token'))->
-            field('us.user_token , us.user_name , us.user_icon ,tp.content,tp.comment_time,tp.comment_id')->select();
-
-            if ($topic_commentS) {
-
-                $arr = array('status' => 1, 'msg' => '获取话题数据成功', 'topic_commentS' => $topic_commentS);
-                echo json_encode($arr);
-            } else {
-                $arr = array('status' => 0, 'msg' => '获取话题数据失败', 'topic_commentS' => $topic_commentS);
-                echo json_encode($arr);
-            }
-        } else {
-            $arr = array('status' => -1, 'msg' => 'token过期', 'userInfo' => null);
-            echo json_encode($arr);
         }
     }
 
@@ -1680,6 +3024,15 @@ class IndexController extends Controller
     public function read($id = 0, $ui = 0)
     {
         echo 'id=' . $id . $ui;
+    }
+
+
+    function tesOriginSQL()
+    {
+        $Model = D();//或者 $Model = D(); 或者 $Model = M();
+        $sql = "select * from `user`";
+        $voList = $Model->query($sql);
+
     }
 
     function login_test($username = null, $password = null)
